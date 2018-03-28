@@ -1,0 +1,20 @@
+#app>div>main {
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 12px;
+}
+.container {
+  width: 100%;
+  max-width: $desktop;
+}
+.container:before {
+  content: "";
+  display: table;
+}
+#app>div>footer {
+  position: relative;
+  height: 40px;
+  line-height: 40px;
+  font-size: 1rem;
+  color: $text;
+}

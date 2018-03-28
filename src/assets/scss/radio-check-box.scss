@@ -1,0 +1,71 @@
+.tickers {
+  position: relative;
+  color: $text;
+  cursor: default !important;
+}
+.tickers span {
+  vertical-align: middle;
+}
+.tickers:hover input:not([disabled]):not(:checked) ~ * {
+  color: black;
+}
+.tickers:hover input:not([disabled]) ~ * {
+  cursor: pointer;
+}
+.tickers input {
+  opacity: 0;
+  position: absolute;
+  top: 0; left: 0;
+}
+.tickers input[disabled] ~ .mark {
+  opacity: 0.5;
+  background-color: #fafafa;
+}
+.tickers input:checked ~ .mark:before {
+  transform: scale(1,1);
+}
+.tickers .mark {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  text-align: center;
+  font-family: 'FontAwesome';
+  font-size: 0.8rem;
+}
+.tickers .mark:before {
+  display: block;
+  transition: transform 100ms;
+  transform: scale(0,0);
+}
+.tickers.checkbox .mark {
+  border: 1px solid $grey-lighter;
+  border-radius: 4px;
+  line-height: 20px;
+}
+.tickers.checkbox .mark:before {
+  width: 100%;
+  height: 100%;
+  color: white;
+  content: "\f00c";
+  background-color: #00d1b2;
+}
+.tickers.checkbox input:checked ~ .mark {
+  border-color: #00d1b2;  
+}
+.tickers.checkbox:hover input:not([disabled]):not(:checked) ~ .mark {
+  border-color: $grey-light;
+}
+.tickers.radio .mark {
+  border: 2px solid #00d1b2;
+  border-radius: 50%;
+}
+.tickers.radio .mark:before {
+  background-color: transparent;
+  content: "";
+  border-radius: 50%;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  margin-left: 2px;
+  margin-top: 2px;
+  background-color: #00d1b2;
+}

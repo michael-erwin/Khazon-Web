@@ -1,0 +1,147 @@
+<template>
+  <div>
+    <div class="container">
+      <PageLoader class="page-loader" v-if="auth===null" color="dark"></PageLoader>
+      <div class="columns is-marginless">
+        <div v-if="auth && page_error==false" class="column">
+          <BusyPanel :class="{busy:loading}">
+            <div class="panel-heading">
+              <b>User Details</b>
+            </div>
+            <div class="panel-block block-footer">
+              <table class="table is-bordered-inside is-narrow is-striped is-fullwidth" style="margin-bottom:0">
+                <tbody>
+                  <tr>
+                    <td>Name</td><td>{{item.name}}</td>
+                  </tr>
+                  <tr>
+                    <td>Email</td><td>{{item.email}}</td>
+                  </tr>
+                  <tr>
+                    <td>Address</td>
+                    <td>
+                      <span class="eth-address monospace">{{item.address}}</span>
+                      <span class="qr-button" title="Click for QR code" @click="show_qr(item.address)">
+                        <i class="fa fa-qrcode"></i>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Guardian</td>
+                    <td>
+                      <span class="eth-address monospace"><a :href="'/user/' + item.upl_address" target="_blank">{{item.upl_address}}</a></span>
+                      <template v-if="this.item.upl_address">
+                        <template v-if="item.upl_type == 'adjust'">
+                          (<a :href="'/user/' + item.regref_id" title="Click for original upline referral" target="_blank">{{item.upl_type}}</a>)
+                        </template>
+                        <template v-else>
+                          ({{item.upl_type}})
+                        </template>
+                      </template>
+                      <template v-else>
+                        (genesis)
+                      </template>
+                      <span v-if="this.item.upl_address" class="qr-button" title="Click for QR code" @click="show_qr(item.upl_address)">
+                        <i class="fa fa-qrcode"></i>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Joined</td><td>{{item.created_at}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </BusyPanel>
+        </div>
+      </div>
+    </div>
+    <div class="modal" :class="{'is-active':modals.qr.active}">
+      <div class="modal-background"></div>
+      <div class="modal-card animated" style="max-width:330px;animation-name:zoomIn">
+        <header class="modal-card-head">
+          <p class="modal-card-title">QR Code</p>
+          <button class="delete is-danger" aria-label="close" @click="modals.qr.active=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column" style="text-align: center">
+              <QRCode :value="modals.qr.value" size="250"></QRCode>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot" style="justify-content:center">
+          <div class="monospace" style="font-size:13px;color:black">
+            {{modals.qr.value}}
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import NavMenuAuth from '@/components/containers/NavMenuAuth'
+  import NavAccountAuth from '@/components/containers/NavAccountAuth'
+  import PageLoader from '@/components/etc/PageLoaderArcs'
+  import BusyPanel from '@/components/containers/BusyPanel'
+  import PanelPaginator from '@/components/containers/PanelPaginator'
+  import {Qr} from '@/mixins/Utilities.js'
+  
+  export default {
+    mixins: [Qr],
+    beforeCreate () {
+      if (localStorage.access_token === undefined) {
+        this.$router.push('/signout')
+      }
+    },
+    beforeMount () {
+      // Reset page data
+      this.$store.commit('resetValues')
+      this.fetch()
+    },
+    data () {
+      return {
+        loading: false,
+        auth: true,
+        page_error: false,
+        item: {}
+      }
+    },
+    methods: {
+      fetch () {
+        this.loading = true
+        let userLocator = this.$route.params.user_locator
+        this.$http.get('users/' + userLocator).then((response) => {
+          this.auth = true
+          this.item = response.body
+          this.loading = false
+          if (typeof response.body.name === 'undefined') this.page_error = '404'
+        }).catch((response) => {
+          if (response.status === 403) {
+            this.auth = false
+          } else {
+            this.$router.push('/signout')
+            this.loading = false
+          }
+        })
+      },
+      show_qr (qrValue) {
+        this.modals.qr.value = qrValue
+        this.modals.qr.active = true
+      }
+    },
+    components: { PageLoader, PanelPaginator, BusyPanel, NavMenuAuth, NavAccountAuth }
+  }
+</script>
+
+<style scoped>
+  @media (max-width:768px) {
+    .eth-address {
+      display: none;
+    }
+  }
+  .is-bordered-inside tr:first-child td {
+    border-top-style: none;
+  }
+</style>
