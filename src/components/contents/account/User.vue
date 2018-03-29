@@ -30,15 +30,7 @@
                     <td>Guardian</td>
                     <td>
                       <span class="eth-address monospace"><a :href="'/user/' + item.upl_address" target="_blank">{{item.upl_address}}</a></span>
-                      <template v-if="this.item.upl_address">
-                        <template v-if="item.upl_type == 'adjust'">
-                          (<a :href="'/user/' + item.regref_id" title="Click for original upline referral" target="_blank">{{item.upl_type}}</a>)
-                        </template>
-                        <template v-else>
-                          ({{item.upl_type}})
-                        </template>
-                      </template>
-                      <template v-else>
+                      <template v-if="!this.item.upl_address">
                         (genesis)
                       </template>
                       <span v-if="this.item.upl_address" class="qr-button" title="Click for QR code" @click="show_qr(item.upl_address)">
