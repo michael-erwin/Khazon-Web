@@ -246,7 +246,7 @@
   }
   .page_loader .loader_icon {
     position: absolute;
-    left: calc(50% - 75px);
+    left: calc(50% - 50px);
     top: calc(50% - 75px);
     animation: fadeInDelay 800ms ease;
   }
