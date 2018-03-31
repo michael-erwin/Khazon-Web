@@ -31,6 +31,7 @@ import Cuks from '@/components/contents/admin/Cuks'
 // Error Pages
 import Error429 from '@/components/contents/errors/Error-429'
 import Error404 from '@/components/contents/errors/Error-404'
+import Notice204 from '@/components/contents/errors/Notice-204'
 
 // Router
 Vue.use(Router)
@@ -55,6 +56,8 @@ Vue.http.interceptors.push(function (request, next) {
       if (typeof response.body.error.data === 'undefined') {
         this.$router.push('/signout')
       }
+    } else if (response.status === 204) {
+      this.$router.push('/notice-204')
     } else if (response.headers.has('Access-Token')) {
       localStorage.access_token = response.headers.get('Access-Token')
     }
@@ -102,7 +105,8 @@ export default new Router({
       component: ErrorPageLayout,
       children: [
         { path: 'error-429', component: Error429, alias: '/error-429' },
-        { path: 'error-404', component: Error404, alias: '/error-404', name: 'page-404' }
+        { path: 'error-404', component: Error404, alias: '/error-404' },
+        { path: 'notice-204', component: Notice204, alias: '/notice-204' }
       ]
     },
     { path: '/signout', component: SignOut },
