@@ -83,8 +83,13 @@
     border: 1px solid #f0f0f0;
     margin-top: 15px;
     border-radius: 4px;
-    /* box-shadow: 1 4px 8px rgba(0,0,0,0.175); */
     color: white;
+  }
+  @media (max-width: 430px) {
+    .form-box {
+      margin-left: calc(0.75rem + 5px);
+      margin-right: calc(0.75rem + 5px);
+    }
   }
 </style>
 
