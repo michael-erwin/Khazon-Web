@@ -27,13 +27,37 @@
                     </td>
                   </tr>
                   <tr>
-                    <td>Guardian</td>
+                    <td>Guardian Address</td>
                     <td>
-                      <span class="eth-address monospace"><a :href="'/user/' + item.upl_address" target="_blank">{{item.upl_address}}</a></span>
-                      <template v-if="!this.item.upl_address">
+                      <span class="eth-address monospace">
+                        <a :href="'/user/' + item.guardian_address" target="_blank">{{item.guardian_address}}</a>
+                      </span>
+                      <template v-if="!this.item.guardian_address" >
+                        <template v-if="this.item.guardian_type==='static'">
+                          (genesis)
+                        </template>
+                        <template v-else>
+                          Not indicated
+                        </template>
+                      </template>
+                      <span v-if="this.item.guardian_address" class="qr-button" title="Click for QR code"
+                       @click="show_qr(item.guardian_address)">
+                        <i class="fa fa-qrcode"></i>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Mounting Address</td>
+                    <td>
+                      <span class="eth-address monospace">
+                        <a :href="'/user/' + item.mounting_address" target="_blank">{{item.mounting_address}}</a>
+                        ({{item.mounting_type}})
+                      </span>
+                      <template v-if="!this.item.mounting_address">
                         (genesis)
                       </template>
-                      <span v-if="this.item.upl_address" class="qr-button" title="Click for QR code" @click="show_qr(item.upl_address)">
+                      <span v-if="this.item.mounting_address" class="qr-button" title="Click for QR code" 
+                       @click="show_qr(item.mounting_address)">
                         <i class="fa fa-qrcode"></i>
                       </span>
                     </td>
@@ -104,6 +128,7 @@
       fetch () {
         this.loading = true
         let userLocator = this.$route.params.user_locator
+        console.log(userLocator)
         this.$http.get('users/' + userLocator).then((response) => {
           this.auth = true
           this.item = response.body
@@ -113,8 +138,9 @@
           if (response.status === 403) {
             this.auth = false
           } else {
-            this.$router.push('/signout')
+            // this.$router.push('/signout')
             this.loading = false
+            console.log('error has occured')
           }
         })
       },
