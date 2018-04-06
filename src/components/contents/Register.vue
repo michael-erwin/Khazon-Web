@@ -2,7 +2,7 @@
   <div class="container">
     <div class="columns">
       <div class="column">
-        <BusyBox :disabled="loading" v-show="!modal_success.active">
+        <BusyBox :disabled="loading" v-show="!modals.message.active">
           <p class="title has-text-centered is-size-5">[ Register ]</p>
           <form>
             <!-- Full Name -->
@@ -133,6 +133,28 @@
             </p>
           </div>
         </BusyBox>
+        <BusyBox :disabled="loading" v-show="modals.message.active">
+          <p class="title has-text-centered is-size-5">[ Success ]</p>
+          <div class="columns is-mobile">
+            <div class="column">
+              <span class="has-text-success" style="flex:2">
+                <i style="font-size:3rem" class="fa fa-check-circle"></i>
+              </span>
+            </div>
+            <div class="column" style="flex:8">
+              {{modals.message.text}}
+            </div>
+          </div>
+          <div class="columns is-mobile" style="margin-bottom: -30px">
+            <div class="column is-hidden-mobile"></div>
+            <div class="column is-half-desktop is-three-quarters-tablet">
+              <router-link :to="{path:'/signin'}" class="button is-primary is-bold is-block">
+                Sign in now
+              </router-link>
+            </div>
+            <div class="column is-hidden-mobile"></div>
+          </div>
+        </BusyBox>
       </div>
     </div>
   </div>
@@ -145,9 +167,11 @@ export default {
   mixins: [Form],
   data () {
     return {
-      modal_success: {
-        active: false,
-        message: 'Modal message.'
+      modals: {
+        message: {
+          active: false,
+          message: 'Modal message.'
+        }
       },
       fields: {
         name: { value: '', error: '' },
@@ -224,7 +248,8 @@ export default {
         this.$http.post('account/register', data).then(response => {
           this.loading = false
           this.enableForm()
-          this.modal_success.active = true
+          this.modals.message.active = true
+          this.modals.message.text = 'Congratulations! You have successfully created a new account.'
         }).catch(error => {
           this.loading = false
           this.enableForm()
