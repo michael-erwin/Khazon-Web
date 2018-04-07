@@ -23,13 +23,12 @@
                     </div>
                   </div>
                 </div>&nbsp;
-                <div v-if="safe.visited.length > 0 || is_safe_unlockable()" class="panel-heading-menu">
+                <div v-if="safe.visited.length > 0" class="panel-heading-menu">
                   <a class="button" tabindex="1">
                     <i class="fa fa-ellipsis-v"></i>
                   </a>
                   <ul class="dropdown animated">
                     <li v-if="safe.visited.length > 0" @mousedown="goto_home_safe()">Got to home safe</li>
-                    <li v-if="is_safe_unlockable()" @mousedown="open_cuk_prompt()">Unlock a chamber</li>
                   </ul>
                 </div>
               </div>
