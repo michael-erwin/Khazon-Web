@@ -24,18 +24,18 @@
                     <td>Email</td>
                     <td>
                       {{settings.profile.email}}
-                      <span class="control-button" title="Modify" @click="invoke_prompt_verify_user('update_email')">
+                      <!-- <span class="control-button" title="Modify" @click="invoke_prompt_verify_user('update_email')">
                         <i class="fa fa-pencil"></i>
-                      </span>
+                      </span> -->
                     </td>
                   </tr>
                   <tr>
                     <td>Wallet Address</td>
                     <td>
                       <span class="eth-address monospace">{{settings.profile.address}}</span>
-                      <span class="control-button" title="Modify" @click="invoke_prompt_verify_user('update_address')">
+                      <!-- <span class="control-button" title="Modify" @click="invoke_prompt_verify_user('update_address')">
                         <i class="fa fa-pencil"></i>
-                      </span>
+                      </span> -->
                     </td>
                   </tr>
                 </tbody>
@@ -937,7 +937,6 @@
         _self.active = false
         clearInterval(_self.countdown.timer)
         _self.countdown.timer = null
-        console.log('prompt_otp: countdown stopped')
       },
       close_prompt_verify_user () {
         this.modals.prompt_verify_user.active = false
@@ -1275,8 +1274,6 @@
               this.$noty.success('New email saved.')
               this.fetch()
             } catch (e) {
-              console.log(response)
-              console.log('Secondary error inside success block.')
               console.log(e)
             }
           }).catch(response => {
@@ -1397,43 +1394,43 @@
         }
         return icon
       },
-      update_address (value = false, reauth = false) {
-        let config = {
-          icon: 'fa fa-address-card',
-          title: 'Change Address',
-          body: 'Enter a new address.',
-          field_placeholder: this.settings.profile.address,
-          field_regex: this.regex.address,
-          field_regex_error: 'invalid address',
-          field_name: 'address',
-          field_type: 'text'
-        }
-        this.last_function_name = 'update_address'
-        this.last_modal_name = 'prompt_value'
-        if (value) config.field_value = value
-        this.invoke_prompt_value(config, reauth)
-      },
-      update_email (value = false, reauth = false) {
-        let config = {
-          method: 'post',
-          route: 'account/email_verify',
-          icon: 'fa fa-envelope',
-          title: 'Change Email',
-          body: 'Enter a new email.',
-          field_placeholder: this.settings.profile.email,
-          field_regex: this.regex.email,
-          field_regex_error: 'invalid format',
-          field_type: 'email',
-          extra_data: {type: 'primary'},
-          success_callback: function (response) {
-            this.verify_otp_email(response)
-          }
-        }
-        this.last_function_name = 'update_email'
-        this.last_modal_name = 'prompt_value'
-        if (value) config.field_value = value
-        this.invoke_prompt_value(config, reauth)
-      },
+      // update_address (value = false, reauth = false) {
+      //   let config = {
+      //     icon: 'fa fa-address-card',
+      //     title: 'Change Address',
+      //     body: 'Enter a new address.',
+      //     field_placeholder: this.settings.profile.address,
+      //     field_regex: this.regex.address,
+      //     field_regex_error: 'invalid address',
+      //     field_name: 'address',
+      //     field_type: 'text'
+      //   }
+      //   this.last_function_name = 'update_address'
+      //   this.last_modal_name = 'prompt_value'
+      //   if (value) config.field_value = value
+      //   this.invoke_prompt_value(config, reauth)
+      // },
+      // update_email (value = false, reauth = false) {
+      //   let config = {
+      //     method: 'post',
+      //     route: 'account/email_verify',
+      //     icon: 'fa fa-envelope',
+      //     title: 'Change Email',
+      //     body: 'Enter a new email.',
+      //     field_placeholder: this.settings.profile.email,
+      //     field_regex: this.regex.email,
+      //     field_regex_error: 'invalid format',
+      //     field_type: 'email',
+      //     extra_data: {type: 'primary'},
+      //     success_callback: function (response) {
+      //       this.verify_otp_email(response)
+      //     }
+      //   }
+      //   this.last_function_name = 'update_email'
+      //   this.last_modal_name = 'prompt_value'
+      //   if (value) config.field_value = value
+      //   this.invoke_prompt_value(config, reauth)
+      // },
       update_email_2nd (value = false, reauth = false) {
         let config = {
           method: 'post',
