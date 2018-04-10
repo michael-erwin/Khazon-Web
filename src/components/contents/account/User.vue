@@ -63,6 +63,10 @@
                     </td>
                   </tr>
                   <tr>
+                    <td>Chamber Location</td>
+                    <td></td>
+                  </tr>
+                  <tr>
                     <td>Joined</td><td>{{item.created_at}}</td>
                   </tr>
                 </tbody>

@@ -121,6 +121,9 @@
                         </span>
                       </td>
                     </tr>
+                    <tr>
+                      <td>Chamber Location</td><td>{{this.current_location.level}}.{{this.current_location.row}}.{{this.current_location.col}}</td>
+                    </tr>
                     <!-- <tr>
                       <td>Guardian</td>
                       <td>
@@ -138,9 +141,6 @@
                         </template>
                         <template v-else>(genesis)</template>
                       </td>
-                    </tr>
-                    <tr>
-                      <td>Location</td><td>{{this.current_location.level}}.{{this.current_location.row}}.{{this.current_location.col}}</td>
                     </tr> -->
                   </tbody>
                 </table>
