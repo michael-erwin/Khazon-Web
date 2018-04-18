@@ -131,7 +131,16 @@
                     <td>{{truncate_decimal(item.kta_amt)}}</td>
                     <td><a :href="'/user/' + item.user_id" target="_blank">{{item.name}}</a></td>
                     <td>{{item.email}}</td>
-                    <td>{{item.complete==1?'completed':'pending'}}</td>
+                    <td>
+                      <template v-if="item.complete">
+                        <a :href="'https://etherscan.io/tx/'+item.ref" target="_blank"
+                          title="Click to see receipt"
+                        >completed</a>
+                      </template>
+                      <template v-else>
+                        pending
+                      </template>
+                    </td>
                     <td>{{format_date(item.created_at)}}</td>
                     <td><a v-show="item.complete==0" class="button is-gradient is-small" @click="pay_account(item)">Pay</a></td>
                   </tr>
