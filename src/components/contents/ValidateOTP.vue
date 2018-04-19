@@ -102,12 +102,8 @@ export default {
           this.loading = false
           this.enableForm()
           try {
-            if (error.status === 429) {
-              this.$router.push('/error-429')
-            } else {
-              let result = JSON.parse(error.bodyText)
-              this.fields.otp.error = result.error.message
-            }
+            let result = JSON.parse(error.bodyText)
+            this.fields.otp.error = result.error.message
           } catch (e) {
             this.errormsg = 'Error has occured.'
           }

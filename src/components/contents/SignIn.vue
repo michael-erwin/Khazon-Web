@@ -123,8 +123,6 @@ export default {
           try {
             if (error.status === 423) {
               this.$router.push('/signin/validate')
-            } else if (error.status === 429) {
-              this.$router.push('/error-429')
             } else {
               let result = JSON.parse(error.bodyText)
               let emailError = (typeof result.error.data.email === 'object') ? result.error.data.email[0] : ''

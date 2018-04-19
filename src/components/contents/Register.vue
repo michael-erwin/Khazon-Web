@@ -254,14 +254,10 @@ export default {
           this.loading = false
           this.enableForm()
           try {
-            if (error.status === 429) {
-              this.$router.push('/error-429')
-            } else {
-              let result = JSON.parse(error.bodyText)
-              if (result.error && result.error.code === 'INVALID_INPUT') {
-                for (let field in result.error.data) {
-                  this.fields[field].error = result.error.data[field][0]
-                }
+            let result = JSON.parse(error.bodyText)
+            if (result.error && result.error.code === 'INVALID_INPUT') {
+              for (let field in result.error.data) {
+                this.fields[field].error = result.error.data[field][0]
               }
             }
           } catch (e) {
