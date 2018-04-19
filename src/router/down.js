@@ -6,7 +6,7 @@ import Resource from 'vue-resource'
 import ErrorPageLayout from '@/components/ErrorPageLayout'
 
 // Error Pages
-import Maintenance from '@/components/contents/errors/Maintenance'
+import Error503 from '@/components/contents/errors/error-503'
 
 // Router
 Vue.use(Router)
@@ -19,7 +19,7 @@ export default new Router({
       path: '/errors',
       component: ErrorPageLayout,
       children: [
-        { path: 'maintenance', component: Maintenance, alias: '/maintenance' }
+        { path: 'maintenance', component: Error503, alias: '/maintenance' }
       ]
     },
     { path: '*', redirect: { path: '/maintenance' } }

@@ -2,9 +2,6 @@
   <div class="column">
     <div class="container">
       <router-view />
-      <p class="error-link">
-        <router-link to="/">[ Home ]</router-link>
-      </p>
     </div>
   </div>
 </template>

@@ -255,6 +255,9 @@
 <script>
   import PageLoader from './etc/PageLoaderArcs'
   export default {
+    beforeMount () {
+      this.$http.get('ping').then(r => console.log(r.bodyText))
+    },
     mounted () {
       this.$noty.setOptions({theme: 'sunset', timeout: 3000})
     },
