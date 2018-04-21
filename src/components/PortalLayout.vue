@@ -222,6 +222,7 @@
     background-image:url(https://tookushp.sirv.com/Images/smoke_by_volneth.jpg);
     background-size: cover;
     background-attachment: fixed;
+    background-position: center center;
   }
   #portal_wrapper:before {
     content: "";
