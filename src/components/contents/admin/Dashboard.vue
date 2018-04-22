@@ -74,7 +74,7 @@
         <div v-if="auth" class="column">
           <BusyPanel :class="{busy:payables_loading}">
             <div class="panel-heading">
-              <b>Account Payables</b>
+              <b><span class="hide-on-mobile">Account </span>Payables</b>
               <div class="panel-heading-right is-pulled-right">
                 <date-picker v-show="filter_result.type=='date_range'" v-model="filter_result.date_range" lang="en "range format="yyyy-MM-dd"
                  :shortcuts="date_presets" confirm @confirm="submit_date_range"></date-picker>
@@ -176,7 +176,9 @@
                   <tr>
                     <td>Pay To</td>
                     <td>
-                      <input type="text" class="address-placeholder monospace" :value="modals.pay.address" />
+                      <input type="text" readonly class="address-placeholder monospace" 
+                      :title="modals.pay.address" 
+                      :value="modals.pay.address" />
                     </td>
                   </tr>
                   <tr>
