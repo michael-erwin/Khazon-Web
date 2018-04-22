@@ -18,6 +18,34 @@ var Qr = {
   },
   components: {QRCode}
 }
+var FullScreenCtl = {
+  data () {
+    return {
+      browser_prefix: ''
+    }
+  },
+  created () {
+    if (document.webkitFullscreenEnabled) {
+      this.browser_prefix = 'webkit'
+    } else if (document.mozFullScreenEnabled) {
+      this.browser_prefix = 'moz'
+    } else if (document.msFullscreenEnabled) {
+      this.browser_prefix = 'ms'
+    }
+  },
+  methods: {
+    makeFullScreen (elem) {
+      elem[this.browser_prefix + 'RequestFullscreen']()
+    },
+    exitFullScreen () {
+      if (this.browser_prefix === 'mox') {
+        document.mozCancelFullScreen()
+      } else {
+        document[this.browser_prefix + 'ExitFullscreen']()
+      }
+    }
+  }
+}
 var Earnings = {
   data () {
     return {
@@ -48,4 +76,4 @@ var Earnings = {
   },
   components: {QRCode}
 }
-export { Qr, Earnings }
+export { Earnings, FullScreenCtl, Qr }
