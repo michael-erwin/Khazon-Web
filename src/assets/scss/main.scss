@@ -89,7 +89,12 @@ input[type=number] {
 }
 .modal-card-head, .modal-card-foot {
   padding: 10px;
-  
+}
+@media (max-width:768px) {
+  .modal-card {
+    margin: 15px 15px;
+    max-width: 100% !important;
+  }
 }
 .no-interact {
   display: none;
