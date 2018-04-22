@@ -115,7 +115,7 @@
               </div>
             </div>
             <div class="panel-block">
-              <table v-if="payables.length > 0" class="table is-hoverable is-narrow is-striped is-fullwidth is-bordered-inside" style="margin-bottom:0">
+              <table id="table_account_payables" v-if="payables.length > 0" class="table is-hoverable is-narrow is-striped is-fullwidth is-bordered-inside" style="margin-bottom:0">
                 <thead>
                   <tr>
                     <th>Amount</th>
@@ -174,7 +174,10 @@
                     <td style="max-width:100px">User</td><td>{{modals.pay.name}}</td>
                   </tr>
                   <tr>
-                    <td>Pay To</td><td><span class="monospace" style="font-size: 12.5px">{{modals.pay.address}}</span></td>
+                    <td>Pay To</td>
+                    <td>
+                      <input type="text" class="address-placeholder monospace" :value="modals.pay.address" />
+                    </td>
                   </tr>
                   <tr>
                     <td>Type</td><td>{{translate_code(modals.pay.code)}}</td>
@@ -223,22 +226,8 @@
         </footer>
       </div>
     </div>
-    <div slot="content" class="modal" :class="{'is-active':modals.qr_scanner.active}">
-      <div class="modal-background" style="background-color:rgba(255,255,255,0)"></div>
-      <div class="modal-card animated" style="animation-name:zoomIn">
-        <header class="modal-card-head">
-          <p class="modal-card-title">QR Scanner</p>
-          <button class="delete is-danger" aria-label="close" @click="modals.qr_scanner.active=false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="qr-scanner-screen">
-            <QrcodeReader v-if="modals.qr_scanner.active" v-show="modals.qr_scanner.init" @init="onInit()" @decode="on_qrscan_decode" :paused="modals.qr_scanner.paused"></QrcodeReader>
-            <div v-show="!modals.qr_scanner.init" class="qr-scanner-info-text">
-              {{modals.qr_scanner.text}}
-            </div>
-          </div>
-        </section>
-      </div>
+    <div ref="qr_scanner">
+      <QRCodeScanner :active="qr_scanner.active" @decoded="scan_done" @canceled="scan_cancel" />
     </div>
   </div>
 </template>
@@ -248,12 +237,12 @@
   import BusyPanel from '@/components/containers/BusyPanel'
   import DatePicker from '@/components/etc/datepicker'
   import PanelPaginator from '@/components/containers/PanelPaginator'
+  import QRCodeScanner from '@/components/etc/QRCodeScanner'
   import SearchBox from '@/components/etc/searchbox'
-  import { Earnings, Qr } from '@/mixins/Utilities.js'
-  import { QrcodeReader } from 'vue-qrcode-reader'
+  import { Earnings, FullScreenCtl, Qr } from '@/mixins/Utilities.js'
 
   export default {
-    mixins: [Earnings, Qr],
+    mixins: [Earnings, FullScreenCtl, Qr],
     beforeCreate () {
       if (localStorage.access_token === undefined) {
         this.$router.push('/signout')
@@ -279,6 +268,7 @@
         auth: null,
         stats_loading: false,
         payables_loading: false,
+        prefix: '',
         stats: {
           total_users: 0,
           total_payables: 0.00,
@@ -308,13 +298,10 @@
               regex_error: 'Invalid format'
             },
             user_id: null
-          },
-          qr_scanner: {
-            active: false,
-            init: false,
-            text: 'Initializing...',
-            paused: false
           }
+        },
+        qr_scanner: {
+          active: null
         }
       }
     },
@@ -447,27 +434,6 @@
         let dd = String(dateObj.getDate()).length === 1 ? '0' + dateObj.getDate() : dateObj.getDate()
         return yyyy + '-' + mm + '-' + dd
       },
-      async onInit (promise) {
-        let _self = this.modals.qr_scanner
-        try {
-          await promise
-          _self.init = true
-          console.log('qr scanner init success')
-        } catch (error) {
-          _self.init = false
-          _self.text = error.message
-          console.log('Caught error: ' + error)
-        } finally {
-          // _self.init = true
-        }
-      },
-      on_qrscan_decode (content) {
-        let _self = this.modals.qr_scanner
-        let payModal = this.modals.pay
-        _self.active = false
-        payModal.txn_hash.value = content
-        this.checkinput_pay()
-      },
       pay_account (item) {
         let _self = this.modals.pay
         _self.address = item.address
@@ -482,8 +448,18 @@
         this.checkinput_pay()
       },
       scan_qr () {
-        let _self = this.modals.qr_scanner
-        _self.active = true
+        this.qr_scanner.active = true
+        if (window.innerWidth < 768) this.makeFullScreen(this.$refs.qr_scanner)
+      },
+      scan_cancel () {
+        this.qr_scanner.active = null
+        this.exitFullScreen()
+      },
+      scan_done (data) {
+        this.modals.pay.txn_hash.value = data
+        this.qr_scanner.active = null
+        this.exitFullScreen()
+        this.checkinput_pay()
       },
       set_payable_filter (status = false) {
         this.filter_result.paid = status
@@ -536,24 +512,21 @@
         }
       }
     },
-    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker, QrcodeReader, SearchBox }
+    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker, QRCodeScanner, SearchBox }
   }
 </script>
 
 <style scoped>
+  .address-placeholder {
+    font-size: 12.5px;
+    border-style: none;
+    background-color: transparent;
+    width: 100%;
+    text-overflow: ellipsis;
+  }
   .dropdown li:hover .fa {
     color: #000 !important;
     font-weight: bold;
-  }
-  .qr-scanner-screen {
-    width: 100%;
-    height: 337.5px;
-  }
-  .qr-scanner-info-text {
-    width: 100%;
-    height: 100%;
-    line-height: 337.5px;
-    text-align: center;
   }
   .stats .column {
     flex: 1;
@@ -583,5 +556,13 @@
     color: white;
     font-size: 3.5rem;
     margin: -5px -9px;
+  }
+  @media (max-width: 420px) {
+    #table_account_payables th:nth-child(3),
+    #table_account_payables td:nth-child(3),
+    #table_account_payables th:nth-child(4),
+    #table_account_payables td:nth-child(4) {
+      display: none;
+    }
   }
 </style>
