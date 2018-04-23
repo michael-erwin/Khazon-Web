@@ -60,8 +60,8 @@
               <p class="help is-danger" :class="{'is-active':fields.password.error.length>0}">{{fields.password.error}}</p>
             </div>
             <!-- Wallet Address -->
-            <div class="field">
-              <p class="control has-icons-left has-icons-right">
+            <div class="field has-addons">
+              <p class="control has-icons-left has-icons-right" style="width:100%">
                 <input class="input" type="text" placeholder="Wallet Address*"
                   :class="{'is-danger':fields.address.error.length>0}"
                   v-model="fields.address.value" @keyup="checkInput()"
@@ -75,6 +75,11 @@
                   <i class="fa fa-warning"></i>
                 </span>
               </p>
+              <div class="control" style="margin-right:0px">
+                <a class="button" title="Scan QR" @click="scan_qr('address')">
+                  <i class="fa fa-camera"></i>
+                </a>
+              </div>
               <p class="help is-danger" :class="{'is-active':fields.address.error.length>0}">{{fields.address.error}}</p>
             </div>
             <!-- CUK -->
@@ -96,8 +101,8 @@
               <p class="help is-danger" :class="{'is-active':fields.cuk.error.length>0}">{{fields.cuk.error}}</p>
             </div>
             <!-- Upline Address -->
-            <div class="field">
-              <p class="control has-icons-left has-icons-right">
+            <div class="field has-addons">
+              <p class="control has-icons-left has-icons-right" style="width:100%">
                 <input class="input" type="text" placeholder="Guardian Wallet Address"
                   :class="{'is-danger':fields.upl_address.error.length>0}"
                   v-model="fields.upl_address.value" @keyup="checkInput()"
@@ -111,6 +116,11 @@
                   <i class="fa fa-warning"></i>
                 </span>
               </p>
+              <div class="control" style="margin-right:0px">
+                <a class="button" title="Scan QR" @click="scan_qr('upl_address')">
+                  <i class="fa fa-camera"></i>
+                </a>
+              </div>
               <p class="help is-danger" :class="{'is-active':fields.upl_address.error.length>0}">{{fields.upl_address.error}}</p>
             </div>
             <!-- Buttons -->
@@ -157,14 +167,19 @@
         </BusyBox>
       </div>
     </div>
+    <div ref="qr_scanner">
+      <QRCodeScanner :active="qr_scanner.active" @decoded="scan_done" @canceled="scan_cancel" />
+    </div>
   </div>
 </template>
 
 <script>
 import BusyBox from '@/components/containers/BusyBox'
-import {Form} from '@/mixins/Form.js'
+import { FullScreenCtl } from '@/mixins/Utilities.js'
+import { Form } from '@/mixins/Form.js'
+import QRCodeScanner from '@/components/etc/QRCodeScanner'
 export default {
-  mixins: [Form],
+  mixins: [Form, FullScreenCtl],
   data () {
     return {
       modals: {
@@ -180,6 +195,10 @@ export default {
         address: { value: '', error: '' },
         cuk: { value: '', error: '' },
         upl_address: { value: '', error: '' }
+      },
+      qr_scanner: {
+        active: null,
+        field: null
       }
     }
   },
@@ -266,10 +285,26 @@ export default {
         })
       }
     },
+    scan_qr (field) {
+      this.qr_scanner.active = true
+      this.qr_scanner.field = field
+      if (window.innerWidth < 768) this.makeFullScreen(this.$refs.qr_scanner)
+    },
+    scan_cancel () {
+      this.qr_scanner.active = null
+      this.qr_scanner.field = null
+      this.exitFullScreen()
+    },
+    scan_done (data) {
+      this.fields[this.qr_scanner.field].value = data
+      this.qr_scanner.active = null
+      this.exitFullScreen()
+      this.checkInput()
+    },
     finish () {
       this.$router.push('signin')
     }
   },
-  components: { BusyBox }
+  components: { BusyBox, QRCodeScanner }
 }
 </script>
