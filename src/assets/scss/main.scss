@@ -249,6 +249,10 @@ input[type=number] {
   border-color: $grey-light;
   color: $text-strong;
 }
+.qrcode-reader__camera {
+  display: inline-block;
+  max-width: 540px !important;
+}
 .sub-title {
   font-size: 0.85rem;
   margin-bottom: 10px;

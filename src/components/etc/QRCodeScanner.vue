@@ -60,13 +60,6 @@ export default {
 }
 </script>
 
-<style>
-.qrcode-reader__camera {
-  display: inline-block;
-  max-width: 540px !important;
-}
-</style>
-
 <style scoped>
 .qr-scanner {
   width: 100%;
