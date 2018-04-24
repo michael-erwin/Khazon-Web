@@ -4,10 +4,10 @@
       <nav class="navbar" role="navigation">
         <div class="container">
           <div class="navbar-brand">
-            <span class="navbar-item" style="font-size:1.8rem;line-height:1.8rem">
+            <span class="navbar-item" style="font-size:1.8rem">
               <router-link to="/">
-                <object data="/static/logo.svg" type="image/svg+xml" style="width:32px;height:32px;vertical-align:top;opacity:0.8;display:inline" />
-                <span>Khazon</span>
+                <object data="/static/logo.svg" type="image/svg+xml" class="logo-icon" />
+                <span class="logo-text">Khazon</span>
               </router-link>
             </span>
             <div class="navbar-burger" :class="{'is-active':menu_active}" @click="menu_active=!menu_active">
@@ -43,6 +43,23 @@
 </template>
 
 <style>
+  .navbar-item {
+    padding-top:0;
+    padding-bottom:0;
+  }
+  .navbar-item .logo-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+    display: inline-block;
+    position: relative;
+    top: 5px;
+  }
+  .navbar-item .logo-text {
+    display: inline-block;
+    position: relative;
+    top: -1px;
+  }
   .table.is-hoverable.is-striped tbody tr:not(.is-selected):hover {
     background-color: #eaf8fe;
   }
