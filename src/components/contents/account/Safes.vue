@@ -107,7 +107,7 @@
                 </div>
               </div>
               <div v-if="safe.current" style="padding:5px">
-                <table class="table is-narrow is-bordered is-striped is-fullwidth" style="margin:0">
+                <table class="table is-narrow is-bordered is-striped is-fullwidth user-details" style="margin:0">
                   <tbody>
                     <tr>
                       <td>Email</td><td>{{this.safe.owner.email}}</td>
@@ -115,14 +115,18 @@
                     <tr>
                       <td>Address</td>
                       <td>
-                        <a :href="'/user/' + safe.owner.address" target="_blank">{{this.safe.owner.address}}</a>
+                        <a class="eth-address monospace overflow-ellipsis" 
+                          :href="'/user/' + safe.owner.address" target="_blank">
+                          {{this.safe.owner.address}}
+                        </a>
                         <span class="qr-button" title="Click for QR code" @click="show_qr(safe.owner.address)">
                           <i class="fa fa-qrcode"></i>
                         </span>
                       </td>
                     </tr>
                     <tr>
-                      <td>Chamber Location</td><td>{{this.current_location.level}}.{{this.current_location.row}}.{{this.current_location.col}}</td>
+                      <td>Chamber Location</td>
+                      <td>{{this.current_location.level}}.{{this.current_location.row}}.{{this.current_location.col}}</td>
                     </tr>
                     <!-- <tr>
                       <td>Guardian</td>
@@ -221,9 +225,10 @@
           </div>
         </section>
         <footer class="modal-card-foot" style="justify-content:center">
-          <div class="monospace" style="font-size:13px;color:black">
-            {{modals.qr.value}}
-          </div>
+          <input class="monospace overflow-ellipsis input-clear" 
+          style="width:100%;text-align:center" 
+          :value="modals.qr.value" readonly 
+           @focus="$event.target.select()" />
         </footer>
       </div>
     </div>
@@ -334,7 +339,20 @@
           } else {
             statusName = 'unknown'
             if (this.safe.current[placement]) {
-              if (this.safe.current[placement].user) statusName = this.safe.current[placement].user.name
+              let truncatePosition = ['llt', 'lmd', 'rmd', 'rlt']
+              let truncateRequired = false
+              if (this.safe.current[placement].user) {
+                for (let i = 0; i < truncatePosition.length; i++) {
+                  if (placement === truncatePosition[i]) {
+                    truncateRequired = true
+                  }
+                }
+                if (truncateRequired) {
+                  statusName = this.truncate_name(this.safe.current[placement].user.name)
+                } else {
+                  statusName = this.safe.current[placement].user.name
+                }
+              }
             }
           }
         }
@@ -549,6 +567,14 @@
           }
         }
       },
+      truncate_name (name) {
+        let names = name.split(' ')
+        if (names.length > 2) {
+          return names[0] + ' ' + names[1] + ' ...'
+        } else {
+          return name
+        }
+      },
       is_safe_current (safeIndex) {
         if (this.safe.index === safeIndex) {
           return true
@@ -717,19 +743,15 @@
   */
   table.matrix td.hovered {
     border: 4px solid #FF3050!important;
-    /* border: 4px solid #6FBB02 !important; */
   }
   table.matrix td[guard=other]:hover {
     background-color: rgb(34,102,153);
     border: 4px solid #FF3050;
-    /* border: 4px solid #6FBB02; */
-    /* box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.12), 0px 2px 2px 0px rgba(0,0,0,0.24); */
   }
   table.matrix td[guard=other]:hover:before,
   table.matrix td[guard=other]:hover:after {
     top: -24px;
     background-color: #FF3050;
-    /* background-color: #6FBB02; */
   }
   table.matrix td[guard=other]:hover:before  {
     left: calc(25% - 17px)
@@ -739,5 +761,32 @@
   }
   table.table {
     margin-bottom: 1.1rem;
+  }
+  table.user-details {
+    table-layout:fixed;
+  }
+  /**
+  * Responsive
+  */
+  @media (max-width: 420px) {
+    table.matrix td {
+      line-height: 1 !important;
+    }
+    table.user-details td {
+      position: relative;
+      vertical-align: middle;
+    }
+    table.user-details td:first-child {
+      width: 10%;
+    }
+    a.eth-address {
+      width: 85%;
+      display: block;
+      line-height: 30px;
+    }
+    .qr-button {
+      position: absolute;
+      top: 4px; right: 8px;
+    }
   }
 </style>

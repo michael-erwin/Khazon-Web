@@ -32,7 +32,10 @@
                   <tr>
                     <td>Wallet Address</td>
                     <td>
-                      <span class="eth-address monospace">{{settings.profile.address}}</span>
+                      <span class="eth-address monospace overflow-ellipsis">{{settings.profile.address}}</span>
+                      <span class="qr-button" title="Click for QR code" @click="show_qr(settings.profile.address)">
+                        <i class="fa fa-qrcode"></i>
+                      </span>
                       <!-- <span class="control-button" title="Modify" @click="invoke_prompt_verify_user('update_address')">
                         <i class="fa fa-pencil"></i>
                       </span> -->
@@ -656,6 +659,28 @@
         </footer>
       </div>
     </div>
+    <div class="modal" :class="{'is-active':modals.qr.active}">
+      <div class="modal-background"></div>
+      <div class="modal-card animated" style="max-width:330px;animation-name:zoomIn">
+        <header class="modal-card-head">
+          <p class="modal-card-title">QR Code</p>
+          <button class="delete is-danger" aria-label="close" @click="modals.qr.active=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column" style="text-align: center">
+              <QRCode :value="modals.qr.value" size="250"></QRCode>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot" style="justify-content:center">
+          <input class="monospace overflow-ellipsis input-clear" 
+          style="width:100%;text-align:center" 
+          :value="modals.qr.value" readonly 
+           @focus="$event.target.select()" />
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1118,6 +1143,10 @@
         this.modals.message.body = body
         this.modals.message.active = true
       },
+      show_qr (qrValue) {
+        this.modals.qr.value = qrValue
+        this.modals.qr.active = true
+      },
       submit_update_password () {
         let _self = this.modals.change_pass
         if (_self.input_valid) {
@@ -1546,11 +1575,6 @@
 </script>
 
 <style scoped>
-  @media (max-width:768px) {
-    .eth-address {
-      display: none;
-    }
-  }
   .button.is-gradient {
     min-width: 73px;
   }
@@ -1562,6 +1586,9 @@
   }
   .cqa_ticker_inputs table.cqa_ticker:last-child {
     margin-bottom: 0px;
+  }
+  table {
+    table-layout:fixed;
   }
   table.cqa_ticker {
     width: 100%;
@@ -1625,5 +1652,18 @@
   }
   td:first-child {
     width: 30%;
+  }
+  @media (max-width:420px) {
+    table td {
+      position: relative;
+    }
+    .qr-button {
+      position: absolute;
+      top: 4px; right: 8px;
+    }
+    .eth-address {
+      display: block;
+      width: 85%;
+    }
   }
 </style>

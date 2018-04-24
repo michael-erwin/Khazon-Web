@@ -133,7 +133,6 @@
       fetch () {
         this.loading = true
         let userLocator = this.$route.params.user_locator
-        console.log(userLocator)
         this.$http.get('users/' + userLocator).then((response) => {
           this.auth = true
           this.item = response.body
@@ -143,7 +142,7 @@
           if (response.status === 403) {
             this.auth = false
           } else {
-            // this.$router.push('/signout')
+            this.$router.push('/signout')
             this.loading = false
             console.log('error has occured')
           }
@@ -160,7 +159,7 @@
 
 <style scoped>
   table {
-    table-layout:fixed
+    table-layout:fixed;
   }
   table th,
   table td {
