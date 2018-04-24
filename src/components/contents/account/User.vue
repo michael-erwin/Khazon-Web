@@ -20,7 +20,7 @@
                   <tr>
                     <td>Address</td>
                     <td>
-                      <span class="eth-address monospace">{{item.address}}</span>
+                      <span class="eth-address monospace overflow-ellipsis">{{item.address}}</span>
                       <span class="qr-button" title="Click for QR code" @click="show_qr(item.address)">
                         <i class="fa fa-qrcode"></i>
                       </span>
@@ -29,7 +29,7 @@
                   <tr>
                     <td>Guardian Address</td>
                     <td>
-                      <span class="eth-address monospace">
+                      <span class="eth-address monospace overflow-ellipsis">
                         <a :href="'/user/' + item.guardian_address" target="_blank">{{item.guardian_address}}</a>
                       </span>
                       <template v-if="!this.item.guardian_address" >
@@ -49,7 +49,7 @@
                   <tr>
                     <td>Mounting Address</td>
                     <td>
-                      <span class="eth-address monospace">
+                      <span class="eth-address monospace overflow-ellipsis">
                         <a :href="'/user/' + item.mounting_address" target="_blank">{{item.mounting_address}}</a>
                         ({{item.mounting_type}})
                       </span>
@@ -91,9 +91,10 @@
           </div>
         </section>
         <footer class="modal-card-foot" style="justify-content:center">
-          <div class="monospace" style="font-size:13px;color:black">
-            {{modals.qr.value}}
-          </div>
+          <input class="monospace overflow-ellipsis input-clear" 
+          style="width:100%;text-align:center" 
+          :value="modals.qr.value" readonly 
+           @focus="$event.target.select()" />
         </footer>
       </div>
     </div>
@@ -158,9 +159,33 @@
 </script>
 
 <style scoped>
+  table {
+    table-layout:fixed
+  }
+  table th,
+  table td {
+    position: relative;
+    vertical-align: middle;
+  }
+  table td:first-child {
+    width: 20%;
+  }
   @media (max-width:768px) {
-    .eth-address {
-      display: none;
+  }
+  @media (max-width:420px) {
+    table td {
+      height: 36px;
+    }
+    table td:first-child {
+      width: 30%;
+    }
+    table td:last-child > .eth-address {
+      display: block;
+      width: 85%;
+    }
+    .qr-button {
+      position: absolute;
+      top: 4px; right: 8px;
     }
   }
   .is-bordered-inside tr:first-child td {
