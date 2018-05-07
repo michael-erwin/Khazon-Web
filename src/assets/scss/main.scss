@@ -117,6 +117,10 @@ input[type=number] {
 .field .notification.is-mini {
   padding: 0.5rem 1rem;
 }
+.has-addons .control .button {
+  border-top-right-radius: 3px !important;
+  border-bottom-right-radius: 3px !important;
+}
 .input {
   box-shadow: none!important;
 }
@@ -182,7 +186,17 @@ input[type=number] {
   position: relative;
   z-index: 9;
 }
-.panel-heading-menu .dropdown {
+.panel-block-menu {
+  position: absolute;
+  z-index: 9;
+  top: 5px; right: 5px;
+}
+.panel-block-menu .dropdown {
+  color: #363636;
+  background-color: white;
+}
+.panel-heading-menu .dropdown,
+.panel-block-menu .dropdown {
   min-width: 150px;
   font-size: 0.85rem;
   position: absolute;
@@ -190,19 +204,36 @@ input[type=number] {
   border: 1px solid #d9d9d9;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
   padding: 2px 0;
-  border-radius: 2px;
+  border-radius: 3px;
   display: none;
 }
 .panel-heading-menu .button:focus {
-  border-color: #3273dc !important;
+  /*border-color: #3273dc !important;*/
+  border-color: #bfbfbf !important;
+  box-shadow: inset 0px 0px 4px #c5c5c5;
+  background-color: #f5f5f5;
 }
-.panel-heading-menu .button:focus ~ .dropdown {
+.panel-block-menu .button:focus {
+  border-color: transparent;
+  background-color: rgba(0,0,0,0.2);
+}
+.panel-heading-menu .button:focus ~ .dropdown,
+.panel-block-menu .button:focus ~ .dropdown {
   display: inline-block;
 }
-.panel-heading-menu .dropdown li {
+.panel-block-menu .button:not(:focus):hover {
+  border-color: rgba(220,220,210,0.8);;
+  background-color: rgba(220,220,210,0.3);
+}
+.panel-block-menu .button:focus:hover {
+  border-color: transparent !important;
+}
+.panel-heading-menu .dropdown li,
+.panel-block-menu .dropdown li {
   cursor: pointer;
   padding: 6px 10px;
   white-space: nowrap;
+  line-height: 1;
 }
 .panel-heading-menu .dropdown li.divider {
   height: 1px;
@@ -216,7 +247,8 @@ input[type=number] {
   border-top: 1px solid #cfcfcf;
   border-bottom: 1px solid white;
 }
-.panel-heading-menu .dropdown li:hover {
+.panel-heading-menu .dropdown li:hover,
+.panel-block-menu .dropdown li:hover {
   background-color: #eaf8fe;
 }
 .panel-heading-menu .button {
@@ -228,7 +260,16 @@ input[type=number] {
   padding: 0;
   border-color: transparent;
 }
-.panel-heading-menu:hover .button {
+.panel-block-menu .button {
+  width: 1.45rem;
+  padding: 0px;
+  height: 1.6rem;
+  color: white;
+  background-color: transparent;
+  border-color: transparent;
+}
+.panel-heading-menu:hover .button,
+.panel-block-menu .button:hover {
   border-color: #d5d5d5;
 }
 .panel-heading-right {

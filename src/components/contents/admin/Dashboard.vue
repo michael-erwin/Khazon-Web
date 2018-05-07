@@ -115,7 +115,8 @@
               </div>
             </div>
             <div class="panel-block">
-              <table id="table_account_payables" v-if="payables.length > 0" class="table is-hoverable is-narrow is-striped is-fullwidth is-bordered-inside" style="margin-bottom:0">
+              <table id="table_account_payables" v-if="payables.length > 0" 
+                class="table is-hoverable is-narrow is-striped is-fullwidth is-bordered-inside" style="margin-bottom:0">
                 <thead>
                   <tr>
                     <th>Amount</th>
@@ -142,7 +143,25 @@
                       </template>
                     </td>
                     <td>{{format_date(item.created_at)}}</td>
-                    <td><a v-show="item.complete==0" class="button is-gradient is-small" @click="pay_account(item)">Pay</a></td>
+                    <td class="actions">
+                      <a v-show="item.complete==0" class="button is-gradient is-small has-text-primary" 
+                        :class="{'is-loading':item.id==item_pay_loading}" @click="lock_account(item, true)"
+                        title="click to pay">
+                          <i class="fa fa-credit-card"></i>
+                        </a>
+                      <template v-if="item.complete==0">
+                        <a v-if="item.locked==1" class="button is-gradient is-small has-text-danger" 
+                          :class="{'is-loading':item.id==item_unlock_loading}"  @click="unlock_account(item)"
+                          title="click to unlock">
+                          <i class="fa fa-lock"></i>
+                        </a>
+                        <a v-if="item.locked==0" class="button is-gradient is-small" 
+                          :class="{'is-loading':item.id==item_lock_loading}"  @click="lock_account(item)"
+                          title="click to lock">
+                          <i class="fa fa-unlock"></i>
+                        </a>
+                      </template>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -160,7 +179,7 @@
       <div class="modal-card animated">
         <header class="modal-card-head">
           <p class="modal-card-title">Pay Account</p>
-          <button class="delete is-danger" aria-label="close" @click="modals.pay.active=false"></button>
+          <button class="delete is-danger" :disabled="modals.pay.loading" @click="modals.pay.active=false"></button>
         </header>
         <section class="modal-card-body">
           <div class="columns">
@@ -192,10 +211,13 @@
                     <td>
                       <form @submit.prevent="submit_pay()" novalidate>
                         <div class="field has-addons">
-                          <div class="control" @click="scan_qr()">
-                            <a class="button is-small" title="Scan QR using webcam">
+                          <div class="control">
+                            <button class="button is-small" 
+                             title="Scan QR using webcam" 
+                             :disabled="modals.pay.loading"
+                              @click="scan_qr()">
                               <i class="fa fa-camera"></i>
-                            </a>
+                            </button>
                           </div>
                           <div class="control is-expanded has-icons-right">
                             <input class="input is-small" type="text" placeholder="TXN value"
@@ -221,10 +243,12 @@
         </section>
         <footer class="modal-card-foot" style="justify-content:flex-end">
           <button class="button is-gradient has-minimum" 
-            :class="{'is-loading':modals.pay.loading}"
+            :class="{'is-loading':modals.pay.loading=='pay'}"
             :disabled="!modals.pay.input_valid || modals.pay.loading"
             @click="submit_pay()">Confirm</button>
-          <button class="button is-gradient has-minimum" @click="modals.pay.active=false">Cancel</button>
+          <button class="button is-gradient has-minimum" @click="unlock_account(null, true)" 
+            :class="{'is-loading':modals.pay.loading=='cancel'}"
+            :disabled="modals.pay.loading">Cancel</button>
         </footer>
       </div>
     </div>
@@ -268,6 +292,9 @@
     data () {
       return {
         auth: null,
+        item_pay_loading: null,
+        item_lock_loading: null,
+        item_unlock_loading: null,
         stats_loading: false,
         payables_loading: false,
         prefix: '',
@@ -290,7 +317,7 @@
             id: null,
             code: 'na',
             input_valid: false,
-            loading: false,
+            loading: null,
             name: 'na',
             type: 'na',
             txn_hash: {
@@ -388,10 +415,11 @@
         })
       },
       fetch_payables (input = false) {
-        let path = 'transactions/payables'
+        let path = 'transactions'
         this.payables_loading = true
         let options = {
           params: {
+            type: 'dr',
             per_page: this.page_limit,
             page: this.page_number
           }
@@ -449,6 +477,69 @@
         this.modals.qr.value = item.address
         this.checkinput_pay()
       },
+      lock_account (item, pay) {
+        if (pay) {
+          this.item_pay_loading = item.id
+        } else {
+          this.item_lock_loading = item.id
+        }
+        let url = 'transactions/' + item.id
+        let data = {
+          locked: 1
+        }
+        this.$http.put(url, data).then((response) => {
+          this.item_lock_loading = null
+          this.item_pay_loading = null
+          item.locked = 1
+          if (pay) this.pay_account(item)
+        }).catch((response) => {
+          this.item_lock_loading = null
+          this.item_pay_loading = null
+          try {
+            this.$noty.error(response.body.error.message)
+            this.fetch_stats()
+          } catch (response) {
+            this.$noty.error('Unknown error has occured')
+            console.log(response)
+          }
+        })
+      },
+      unlock_account (item, cancel) {
+        let itemId = null
+        let itemNow = null
+        if (cancel) {
+          itemId = this.modals.pay.id
+          this.modals.pay.loading = 'cancel'
+          for (let entry of this.payables) {
+            if (entry.id === itemId) itemNow = entry
+          }
+        } else {
+          itemId = item.id
+          itemNow = item
+          this.item_unlock_loading = item.id
+        }
+        let url = 'transactions/' + itemId
+        let data = {
+          locked: '0'
+        }
+        this.$http.put(url, data).then((response) => {
+          this.item_unlock_loading = null
+          itemNow.locked = 0
+          if (cancel) {
+            this.modals.pay.loading = null
+            this.modals.pay.active = false
+          }
+        }).catch((response) => {
+          this.item_unlock_loading = null
+          try {
+            this.$noty.error(response.body.error.message)
+            this.fetch_stats()
+          } catch (response) {
+            this.$noty.error('Unknown error has occured')
+            console.log(response)
+          }
+        })
+      },
       scan_qr () {
         this.qr_scanner.active = true
         if (window.innerWidth < 768) this.makeFullScreen(this.$refs.qr_scanner)
@@ -490,20 +581,19 @@
         let _self = this.modals.pay
         this.checkinput_pay()
         if (_self.input_valid) {
-          _self.loading = true
+          _self.loading = 'pay'
+          let url = 'transactions/pay/' + _self.id
           let data = {
-            id: _self.id,
-            user_id: _self.user_id,
             amount: _self.amount,
             ref: _self.txn_hash.value
           }
-          this.$http.post('transactions/pay', data).then(response => {
-            _self.loading = false
+          this.$http.post(url, data).then(response => {
+            _self.loading = null
             _self.active = false
             this.$noty.success('Payment success.')
             this.fetch_stats()
           }).catch(response => {
-            _self.loading = false
+            _self.loading = null
             try {
               this.$noty.error(response.body.error.message)
             } catch (e) {
@@ -519,6 +609,9 @@
 </script>
 
 <style scoped>
+  .actions .button {
+    width: 32px;
+  }
   .address-placeholder {
     font-size: 12.5px;
     border-style: none;

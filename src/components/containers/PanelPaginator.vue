@@ -1,8 +1,8 @@
 <template>
   <nav class="pagination is-right is-small" role="navigation" aria-label="pagination" style="width:100%">
-    <div style="padding-left: 5px">
-      <span style="line-height:27px">Display</span>
-      <select :value="page_limit" class="select is-small" @change="page_limit_change" ref="page_limit_input">
+    <div class="pagination-display">
+      <span style="line-height:27px">Display</span>&nbsp;<!--
+      --><select :value="page_limit" class="select input is-small" @change="page_limit_change" ref="page_limit_input">
         <option value="15">15</option>
         <option value="25">25</option>
         <option value="50">50</option>
@@ -69,3 +69,18 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  .pagination-display {
+    white-space: nowrap;
+    padding-left: 5px;
+  }
+  .select.input {
+    -webkit-appearance: none;
+    background-image: url(/static/caret-down.svg);
+    background-repeat: no-repeat;
+    background-position: 90% center;
+    width: 55px;
+    background-size: 16px 16px;
+  }
+</style>

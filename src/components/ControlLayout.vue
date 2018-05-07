@@ -4,7 +4,7 @@
       <nav class="navbar" role="navigation">
         <div class="container">
           <div class="navbar-brand">
-            <span class="navbar-item" style="font-size:1.8rem">
+            <span class="navbar-item logo">
               <router-link to="/">
                 <object data="/static/logo.svg" type="image/svg+xml" class="logo-icon" />
                 <span class="logo-text">Khazon</span>
@@ -43,9 +43,10 @@
 </template>
 
 <style>
-  .navbar-item {
-    padding-top:0;
-    padding-bottom:0;
+  .navbar-item.logo {
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size:1.8rem
   }
   .navbar-item .logo-icon {
     width: 32px;

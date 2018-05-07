@@ -210,4 +210,10 @@
       display: none;
     }
   }
+  @media(max-width: 420px) {
+    #referrals_table td:nth-child(2),
+    #referrals_table th:nth-child(2) {
+      display: none;
+    }
+  }
 </style>
