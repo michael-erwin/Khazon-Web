@@ -48,6 +48,21 @@
         <div v-if="auth" class="column">
           <BusyPanel class="card-box lime" :class="{busy:stats_loading}">
             <div class="panel-block">
+              <div class="panel-block-menu">
+                <a class="button" tabindex="1">
+                  <i class="fa fa-ellipsis-v"></i>
+                </a>
+                <ul class="dropdown">
+                  <li @mousedown="invoke_withdraw()">
+                    <i class="fa fa-caret-right"></i>
+                    &nbsp;Withdraw funds
+                  </li>
+                  <li @mousedown="invoke_transfer()">
+                    <i class="fa fa-caret-right"></i>
+                    &nbsp;Transfer funds
+                  </li>
+                </ul>
+              </div>
               <table>
                 <tbody>
                   <tr>
@@ -60,10 +75,10 @@
                       <div>Earnings</div>
                       <div>
                         {{stats.total_rewards}} kta
-                        <button class="button is-gradient mini" :disabled="stats.total_rewards==0" title="Withdraw to wallet."
+                        <!-- <button class="button is-gradient mini" :disabled="stats.total_rewards==0" title="Withdraw to wallet."
                         @click="invoke_withdraw()">
                           <i class="fa fa-arrow-circle-right"></i>
-                        </button>
+                        </button> -->
                       </div>
                     </td>
                   </tr>
@@ -109,6 +124,11 @@
                       <i v-else class="fa fa-circle-o"></i>
                       Safe completed
                     </li>
+                    <li @mousedown="change_code('transfer')">
+                      <i v-if="filter_result.code=='transfer'" class="fa fa-dot-circle-o"></i>
+                      <i v-else class="fa fa-circle-o"></i>
+                      Fund transfer
+                    </li>
                     <li @mousedown="change_code('withdraw')">
                       <i v-if="filter_result.code=='withdraw'" class="fa fa-dot-circle-o"></i>
                       <i v-else class="fa fa-circle-o"></i>
@@ -140,8 +160,13 @@
                     <td class="kta" :class="{debit:item.type==='dr'}">{{truncate_decimal(item.kta_amt)}} kta</td>
                     <td>
                       <template v-if="item.complete">
-                        <template v-if="item.type=='dr'">
+                        <template v-if="item.type=='dr' && item.code=='withdraw'">
                           <a :href="'https://etherscan.io/tx/'+item.ref" target="_blank"
+                            title="Click to see receipt"
+                          >completed</a>
+                        </template>
+                        <template v-else-if="item.code=='transfer'">
+                          <a :href="'transactions/'+item.id" target="_blank"
                             title="Click to see receipt"
                           >completed</a>
                         </template>
@@ -172,7 +197,7 @@
     </div>
     <div class="modal" :class="{'is-active':modals.withdraw.active}">
       <div class="modal-background"></div>
-      <div class="modal-card animated" style="max-width:350px">
+      <div class="modal-card animated" style="max-width:540px">
         <header class="modal-card-head">
           <p class="modal-card-title">Withdraw Funds</p>
           <button class="delete is-danger" :disabled="modals.withdraw.loading" @click="modals.withdraw.active=false"></button>
@@ -180,7 +205,7 @@
         <section class="modal-card-body">
           <div class="columns">
             <div class="column">
-              <div class="info-text">Enter amount:</div>
+              <div class="info-text">Withdraw to your wallet</div>
               <div>
                 <form @submit.prevent="submit_withdraw()" novalidate>
                   <div class="field has-addons">
@@ -222,6 +247,94 @@
         </footer>
       </div>
     </div>
+    <div class="modal" :class="{'is-active':modals.transfer.active}">
+      <div class="modal-background"></div>
+      <div class="modal-card animated" style="max-width:540px">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Transfer Funds</p>
+          <button class="delete is-danger" :disabled="modals.transfer.loading" @click="modals.transfer.active=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column">
+              <div class="info-text">Transfer to another account</div>
+              <div>
+                <form @submit.prevent="submit_transfer()" novalidate>
+                  <div class="field has-addons">
+                    <p class="control has-icons-left has-icons-right" style="width: 100%">
+                      <input class="input" ref="transfer_focus" type="text"
+                        :class="{'is-danger':modals.transfer.fields.amount.error.length>0}"
+                        :placeholder="modals.transfer.fields.amount.placeholder"
+                        :disabled="modals.transfer.loading"
+                        v-model="modals.transfer.fields.amount.value"
+                        @keyup="checkinput_transfer()"
+                        @keydown="number_only($event)"
+                        @paste="checkinput_transfer()"
+                        @cut="checkinput_transfer()"
+                         />
+                      <span class="icon is-small is-left">
+                        <i class="fa fa-money"></i>
+                      </span>
+                      <span class="icon is-small is-right" 
+                        :class="{'is-hidden':modals.transfer.fields.amount.error.length===0}">
+                        <i class="fa fa-warning"></i>
+                      </span>
+                    </p>
+                    <p class="control">
+                      <a class="button is-static" style="width:43.16px">
+                        <span>kta</span>
+                      </a>
+                    </p>
+                    <p class="help is-danger" :class="{'is-active':modals.transfer.fields.amount.error.length>0}">
+                      {{modals.transfer.fields.amount.error}}
+                    </p>
+                  </div>
+                  <div class="field has-addons">
+                    <p class="control has-icons-left has-icons-right" style="width: 100%">
+                      <input class="input" type="text"
+                        :class="{'is-danger':modals.transfer.fields.address.error.length>0}"
+                        :placeholder="modals.transfer.fields.address.placeholder"
+                        :disabled="modals.transfer.loading"
+                        v-model="modals.transfer.fields.address.value"
+                        @keyup="checkinput_transfer()"
+                        @paste="checkinput_transfer()"
+                        @cut="checkinput_transfer()"
+                         />
+                      <span class="icon is-small is-left">
+                        <i class="fa fa-address-card-o"></i>
+                      </span>
+                      <span class="icon is-small is-right" 
+                        :class="{'is-hidden':modals.transfer.fields.address.error.length===0}">
+                        <i class="fa fa-warning"></i>
+                      </span>
+                    </p>
+                    <p class="control">
+                      <a class="button" @click="scan_qr('transfer.address')" title="Scan QR code">
+                        <i class="fa fa-camera"></i>
+                      </a>
+                    </p>
+                    <p class="help is-danger" :class="{'is-active':modals.transfer.fields.address.error.length>0}">
+                      {{modals.transfer.fields.address.error}}
+                    </p>
+                  </div>
+                  <div v-show="modals.transfer.error.length>0">
+                    <div class="notification is-danger animated shake">
+                      {{modals.transfer.error}}
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot" style="justify-content:flex-end">
+          <button class="button is-gradient" :class="{'is-loading':modals.transfer.loading}"
+            :disabled="!modals.transfer.input_valid || modals.transfer.loading"
+            @click="submit_transfer()">Ok</button>
+          <button class="button is-gradient" @click="modals.transfer.active=false" :disabled="modals.transfer.loading">Cancel</button>
+        </footer>
+      </div>
+    </div>
     <div class="modal" :class="{'is-active':modals.confirm.active}">
       <div class="modal-background"></div>
       <div class="modal-card animated" style="max-width:430px">
@@ -244,6 +357,9 @@
         </footer>
       </div>
     </div>
+    <div ref="qr_scanner">
+      <QRCodeScanner :active="qr_scanner.active" @decoded="scan_done" @canceled="scan_cancel" />
+    </div>
   </div>
 </template>
 
@@ -251,7 +367,10 @@
   import PageLoader from '@/components/etc/PageLoaderArcs'
   import BusyPanel from '@/components/containers/BusyPanel'
   import DatePicker from '@/components/etc/datepicker'
+  import { FullScreenCtl } from '@/mixins/Utilities.js'
   import PanelPaginator from '@/components/containers/PanelPaginator'
+  import QRCodeScanner from '@/components/etc/QRCodeScanner'
+
   export default {
     beforeCreate () {
       if (localStorage.access_token === undefined) {
@@ -272,6 +391,10 @@
           code: ''
         },
         kta_precision: 2,
+        qr_scanner: {
+          active: null,
+          field: null
+        },
         stats: {
           total_safes: 0,
           total_referrals: 0,
@@ -285,8 +408,28 @@
             field: {
               value: '',
               error: '',
-              placeholder: '0.0001'
+              placeholder: 'amount',
+              regex: /^\d+(\.\d+)?$/
             }
+          },
+          transfer: {
+            active: false,
+            loading: false,
+            input_valid: false,
+            fields: {
+              amount: {
+                value: '',
+                error: '',
+                placeholder: 'amount',
+                regex: /^\d+(\.\d+)?$/
+              },
+              address: {
+                value: '',
+                error: '',
+                placeholder: 'to address'
+              }
+            },
+            error: ''
           },
           confirm: {
             active: false,
@@ -335,23 +478,8 @@
         return this.$store.state.page.limit
       }
     },
+    mixins: [FullScreenCtl],
     methods: {
-      submit_cancel_withdrawal (confirm) {
-        confirm.loading = true
-        this.$http.post('transactions/cancel', {id: confirm.data}).then(response => {
-          confirm.loading = false
-          confirm.active = false
-          this.fetch_stats()
-        }).catch(response => {
-          confirm.loading = false
-          try {
-            this.$noty.error(response.body.error.message)
-          } catch (e) {
-            this.$noty.error('Unknown error has occured')
-            console.log(e)
-          }
-        })
-      },
       change_code (type) {
         if (this.filter_result.code !== type) {
           this.filter_result.code = type
@@ -364,11 +492,10 @@
         if (fn) _self.fn = fn
         _self.data = data
         _self.active = true
-        console.log(data)
       },
       number_only (evt) {
         var charCode = (evt.which) ? evt.which : evt.keyCode
-        if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+        if ((charCode < 48 || charCode > 57) && (charCode < 96 || charCode > 105) && charCode !== 190 && charCode !== 110 && charCode !== 8) {
           evt.preventDefault()
         } else {
           return true
@@ -380,15 +507,56 @@
         if (_self.field.value === '') {
           _self.field.error = ''
           errors++
+        } else if (!_self.field.regex.test(_self.field.value)) {
+          _self.field.error = 'invalid format'
+          errors++
         } else if (parseFloat(_self.field.value) < 0.0001) {
-          _self.field.error = 'amount is too small'
+          _self.field.error = 'below minimum'
           errors++
         } else if (parseFloat(_self.field.value) > parseFloat(this.stats.total_rewards)) {
-          _self.field.error = 'amount exceeds your balance'
+          _self.field.error = 'exceeded your balance'
           errors++
         } else {
           _self.field.error = ''
         }
+        if (errors === 0) {
+          _self.input_valid = true
+        } else {
+          _self.input_valid = false
+        }
+      },
+      checkinput_transfer () {
+        let _self = this.modals.transfer
+        let errors = 0
+        // Validate kta amount
+        if (_self.fields.amount.value === '') {
+          _self.fields.amount.error = ''
+          errors++
+        } else if (!_self.fields.amount.regex.test(_self.fields.amount.value)) {
+          _self.fields.amount.error = 'invalid format'
+          errors++
+        } else if (parseFloat(_self.fields.amount.value) < 0.0001) {
+          _self.fields.amount.error = 'below minimum'
+          errors++
+        } else if (parseFloat(_self.fields.amount.value) > parseFloat(this.stats.total_rewards)) {
+          _self.fields.amount.error = 'exceeded your balance'
+          errors++
+        } else {
+          _self.fields.amount.error = ''
+        }
+        // Validate Eth address
+        let regexEthAddr = /^0x[0-9a-f]{40}$/i
+        if (_self.fields.address.value.length > 0) {
+          if (!regexEthAddr.test(_self.fields.address.value)) {
+            _self.fields.address.error = 'Format is invalid'
+            errors++
+          } else { _self.fields.address.error = '' }
+        } else {
+          _self.fields.address.error = ''
+          errors++
+        }
+        // Finalize
+        _self.error = ''
         if (errors === 0) {
           _self.input_valid = true
         } else {
@@ -418,7 +586,7 @@
         })
       },
       fetch_activities () {
-        let path = 'transactions/account'
+        let path = 'transactions/my_account/items'
         this.activity_loading = true
         let options = {
           params: {
@@ -465,11 +633,54 @@
         _self.active = true
         this.checkinput_withdraw()
       },
+      invoke_transfer () {
+        let _self = this.modals.transfer
+        _self.fields.amount.value = ''
+        _self.fields.address.value = ''
+        _self.active = true
+        this.checkinput_transfer()
+      },
+      scan_qr (field) {
+        this.qr_scanner.active = true
+        this.qr_scanner.field = field
+        if (window.innerWidth < 768) this.makeFullScreen(this.$refs.qr_scanner)
+      },
+      scan_cancel () {
+        this.qr_scanner.active = null
+        this.qr_scanner.field = null
+        this.exitFullScreen()
+      },
+      scan_done (data) {
+        if (this.qr_scanner.field === 'transfer.address') {
+          this.modals.transfer.fields.address.value = data
+          this.checkinput_transfer()
+        }
+        this.qr_scanner.active = null
+        this.exitFullScreen()
+      },
+      submit_cancel_withdrawal (confirm) {
+        confirm.loading = true
+        let url = 'transactions/my_account/items/' + confirm.data
+        this.$http.delete(url).then(response => {
+          confirm.loading = false
+          confirm.active = false
+          this.fetch_stats()
+        }).catch(response => {
+          confirm.loading = false
+          confirm.active = false
+          try {
+            this.$noty.error(response.body.error.message)
+          } catch (e) {
+            this.$noty.error('Unknown error has occured')
+            console.log(e)
+          }
+        })
+      },
       submit_withdraw () {
         let _self = this.modals.withdraw
         if (_self.input_valid) {
           _self.loading = true
-          this.$http.post('transactions/withdraw', {amount: _self.field.value}).then(response => {
+          this.$http.post('transactions/my_account/withdraw', {amount: _self.field.value}).then(response => {
             _self.loading = false
             _self.active = false
             this.fetch_stats()
@@ -477,6 +688,45 @@
             _self.loading = false
             try {
               _self.field.error = response.body.error.data.amount[0]
+            } catch (e) {
+              this.$noty.error('Unknown error has occured')
+              console.log(e)
+            }
+          })
+        }
+      },
+      submit_transfer () {
+        let _self = this.modals.transfer
+        let url = 'transactions/my_account/transfer'
+        let params = {
+          amount: _self.fields.amount.value,
+          address: _self.fields.address.value
+        }
+        if (_self.input_valid) {
+          _self.loading = true
+          this.$http.post(url, params).then(response => {
+            _self.loading = false
+            _self.active = false
+            this.$noty.success('Fund transfer success')
+            this.fetch_stats()
+          }).catch(response => {
+            _self.loading = false
+            try {
+              if (typeof response.body.error === 'object') {
+                if (typeof response.body.error.data !== 'undefined') {
+                  let errorData = response.body.error.data
+                  let fieldErrors = Object.keys(errorData)
+                  if (fieldErrors.length > 0) {
+                    for (let i in fieldErrors) _self.fields[fieldErrors[i]].error = errorData[fieldErrors[i]][0]
+                  } else {
+                    _self.error = response.body.error.message
+                  }
+                } else {
+                  _self.error = response.body.error.message
+                }
+              } else {
+                this.$noty.error('Unknown error has occured')
+              }
             } catch (e) {
               this.$noty.error('Unknown error has occured')
               console.log(e)
@@ -508,6 +758,8 @@
           translation = 'referral lvl. 3'
         } else if (code === 'withdraw') {
           translation = 'fund withdrawal'
+        } else if (code === 'transfer') {
+          translation = 'fund transfer'
         } else {
           translation = 'unknown'
         }
@@ -517,7 +769,7 @@
         return Number(amount).toFixed(this.kta_precision)
       }
     },
-    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker }
+    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker, QRCodeScanner }
   }
 </script>
 
@@ -550,6 +802,9 @@
   }
   .value-cell>div:last-child {
     font-size: 1.5rem;
+  }
+  .notification {
+    padding: 8px 15px;
   }
   .stats-icon {
     width: 6rem;
