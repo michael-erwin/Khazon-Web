@@ -21,6 +21,7 @@ import AccountDashboard from '@/components/contents/account/Dashboard'
 import Referrals from '@/components/contents/account/Referrals'
 import Safes from '@/components/contents/account/Safes'
 import Settings from '@/components/contents/account/Settings'
+import Transactions from '@/components/contents/account/transactions'
 import User from '@/components/contents/account/User'
 
 // Admin Contents
@@ -52,7 +53,6 @@ Vue.http.interceptors.push(function (request, next) {
   }
   // Keep access token updated
   next(function (response) {
-    console.log(response.status)
     if (response.status === 404) {
       this.$router.push('/error-404')
     } else if (response.status === 429) {
@@ -64,7 +64,6 @@ Vue.http.interceptors.push(function (request, next) {
     } else if (response.status === 500) {
       this.$router.push('/error-500')
     } else if (response.status === 503) {
-      console.log('maintenance')
       this.$router.push('/maintenance')
     } else if (response.headers.has('Access-Token')) {
       localStorage.access_token = response.headers.get('Access-Token')
@@ -96,6 +95,7 @@ export default new Router({
         { path: 'safes/:user_id', component: Safes },
         { path: 'referrals', component: Referrals },
         { path: 'settings', component: Settings },
+        { path: 'transactions/:tx_id', component: Transactions },
         { path: 'user/:user_locator', component: User, alias: '/user/:user_locator' }
       ]
     },
