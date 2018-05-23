@@ -57,6 +57,10 @@
                     <i class="fa fa-caret-right"></i>
                     &nbsp;Withdraw funds
                   </li>
+                  <li @mousedown="invoke_receive()">
+                    <i class="fa fa-caret-right"></i>
+                    &nbsp;Receive funds
+                  </li>
                   <li @mousedown="invoke_transfer()">
                     <i class="fa fa-caret-right"></i>
                     &nbsp;Transfer funds
@@ -360,6 +364,28 @@
     <div ref="qr_scanner">
       <QRCodeScanner :active="qr_scanner.active" @decoded="scan_done" @canceled="scan_cancel" />
     </div>
+    <div class="modal" :class="{'is-active':modals.qr.active}">
+      <div class="modal-background"></div>
+      <div class="modal-card animated" style="max-width:330px;animation-name:zoomIn">
+        <header class="modal-card-head">
+          <p class="modal-card-title">QR Code</p>
+          <button class="delete is-danger" aria-label="close" @click="modals.qr.active=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column" style="text-align: center">
+              <QRCode :value="modals.qr.value" size="250"></QRCode>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot" style="justify-content:center">
+          <input class="monospace overflow-ellipsis input-clear" 
+          style="width:100%;text-align:center" 
+          :value="modals.qr.value" readonly 
+           @focus="$event.target.select()" />
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -367,7 +393,7 @@
   import PageLoader from '@/components/etc/PageLoaderArcs'
   import BusyPanel from '@/components/containers/BusyPanel'
   import DatePicker from '@/components/etc/datepicker'
-  import { FullScreenCtl } from '@/mixins/Utilities.js'
+  import { FullScreenCtl, Qr } from '@/mixins/Utilities.js'
   import PanelPaginator from '@/components/containers/PanelPaginator'
   import QRCodeScanner from '@/components/etc/QRCodeScanner'
 
@@ -478,7 +504,7 @@
         return this.$store.state.page.limit
       }
     },
-    mixins: [FullScreenCtl],
+    mixins: [FullScreenCtl, Qr],
     methods: {
       change_code (type) {
         if (this.filter_result.code !== type) {
@@ -640,6 +666,11 @@
         _self.active = true
         this.checkinput_transfer()
       },
+      invoke_receive () {
+        let userData = JSON.parse(localStorage.user_data)
+        this.modals.qr.value = userData.address
+        this.modals.qr.active = true
+      },
       scan_qr (field) {
         this.qr_scanner.active = true
         this.qr_scanner.field = field
@@ -769,7 +800,7 @@
         return Number(amount).toFixed(this.kta_precision)
       }
     },
-    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker, QRCodeScanner }
+    components: { PageLoader, PanelPaginator, BusyPanel, DatePicker, Qr, QRCodeScanner }
   }
 </script>
 
