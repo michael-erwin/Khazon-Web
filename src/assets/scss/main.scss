@@ -142,6 +142,9 @@ input[type=number] {
   align-items: flex-start;
   z-index: 9999;
 }
+.modal-background {
+  background-color: rgba(0,10,25,.8) !important;
+}
 .modal-card {
   margin-top: 50px;
   animation-name: slideInDown;
