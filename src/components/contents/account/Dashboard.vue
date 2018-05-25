@@ -16,7 +16,7 @@
                     </td>
                     <td class="value-cell">
                       <div>Safe Level</div>
-                      <div>{{stats.total_safes}}</div>
+                      <div class="value">{{stats.total_safes}}</div>
                     </td>
                   </tr>
                 </tbody>
@@ -37,7 +37,7 @@
                     </td>
                     <td class="value-cell">
                       <div>Referrals</div>
-                      <div>{{stats.total_referrals}}</div>
+                      <div class="value">{{stats.total_referrals}}</div>
                     </td>
                   </tr>
                 </tbody>
@@ -52,18 +52,18 @@
                 <a class="button" tabindex="1">
                   <i class="fa fa-ellipsis-v"></i>
                 </a>
-                <ul class="dropdown">
-                  <li @mousedown="invoke_withdraw()">
-                    <i class="fa fa-caret-right"></i>
-                    &nbsp;Withdraw funds
+                <ul class="dropdown earnings-dropdown">
+                  <li class="transfer" @mousedown="invoke_transfer()">
+                    <!-- <i class="fa fa-caret-right"></i> -->
+                    Transfer funds
                   </li>
-                  <li @mousedown="invoke_receive()">
-                    <i class="fa fa-caret-right"></i>
-                    &nbsp;Receive funds
+                  <li class="receive" @mousedown="invoke_receive()">
+                    <!-- <i class="fa fa-caret-right"></i> -->
+                    Receive funds
                   </li>
-                  <li @mousedown="invoke_transfer()">
-                    <i class="fa fa-caret-right"></i>
-                    &nbsp;Transfer funds
+                  <li class="withdraw" @mousedown="invoke_withdraw()">
+                    <!-- <i class="fa fa-caret-right"></i> -->
+                    Withdraw funds
                   </li>
                 </ul>
               </div>
@@ -77,13 +77,35 @@
                     </td>
                     <td class="value-cell">
                       <div>Earnings</div>
-                      <div>
+                      <div class="value">
                         {{stats.total_rewards}} kta
                         <!-- <button class="button is-gradient mini" :disabled="stats.total_rewards==0" title="Withdraw to wallet."
                         @click="invoke_withdraw()">
                           <i class="fa fa-arrow-circle-right"></i>
                         </button> -->
                       </div>
+                      <table class="card-buttons">
+                        <tr>
+                          <td>
+                            <button class="button is-gradient mini" 
+                            title="Transfer" @click="invoke_transfer()">
+                            <div class="button-icon transfer"></div>
+                            </button>
+                          </td>
+                          <td>
+                            <button class="button is-gradient mini" 
+                            title="Receive" @click="invoke_receive()">
+                            <div class="button-icon receive"></div>
+                            </button>
+                          </td>
+                          <td>
+                            <button class="button is-gradient mini"
+                            title="Withdraw" @click="invoke_withdraw()">
+                            <div class="button-icon withdraw"></div>
+                            </button>
+                          </td>
+                        </tr>
+                      </table>
                     </td>
                   </tr>
                 </tbody>
@@ -366,9 +388,9 @@
     </div>
     <div class="modal" :class="{'is-active':modals.qr.active}">
       <div class="modal-background"></div>
-      <div class="modal-card animated" style="max-width:330px;animation-name:zoomIn">
+      <div class="modal-card animated" style="max-width:330px">
         <header class="modal-card-head">
-          <p class="modal-card-title">QR Code</p>
+          <p class="modal-card-title">Receive Funds</p>
           <button class="delete is-danger" aria-label="close" @click="modals.qr.active=false"></button>
         </header>
         <section class="modal-card-body">
@@ -807,10 +829,40 @@
 <style scoped>
   .button.mini {
     padding: 0px !important;
-    width: 25px;
+    width: 88%;
     height: 25px;
-    line-height: 25px;
+    line-height: 20px;
     vertical-align: middle;
+    font-size: 15px;
+  }
+  .button-icon {
+    width: 100%;
+    height: 100%;
+    background-size: 16px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    display: block;
+    position:absolute; left: 0; top: 0;
+  }
+  .button-icon.transfer,
+  .earnings-dropdown .transfer {
+    background-image:url('/static/transfer.png');
+  }
+  .button-icon.receive,
+  .earnings-dropdown .receive {
+    background-image:url('/static/receive.png');
+  }
+  .button-icon.withdraw,
+  .earnings-dropdown .withdraw {
+    background-image:url('/static/withdraw.png');
+  }
+  .card-buttons td {
+    vertical-align: bottom;
+  }
+  .earnings-dropdown li {
+    padding-left: 30px !important;
+    background-position: 8px center;
+    background-repeat: no-repeat;
   }
   footer .button.is-gradient {
     min-width: 73px;
@@ -829,10 +881,18 @@
   .value-cell>div:first-child {
     font-size: 1.2rem;
     font-weight: 500;
-    margin-bottom: 5px;
   }
-  .value-cell>div:last-child {
-    font-size: 1.5rem;
+  table.card-buttons td {
+    text-align: center;
+  }
+  table.card-buttons td:first-child {
+    text-align: left;
+  }
+  table.card-buttons td:last-child {
+    text-align: right;
+  }
+  .value {
+    font-size: 1.3rem;
   }
   .notification {
     padding: 8px 15px;
