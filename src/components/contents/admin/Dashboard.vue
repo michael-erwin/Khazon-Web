@@ -419,7 +419,7 @@
         this.payables_loading = true
         let options = {
           params: {
-            type: 'dr',
+            code: 'withdraw',
             per_page: this.page_limit,
             page: this.page_number
           }
