@@ -9,25 +9,74 @@
             <div class="panel-heading">
               <b>Users</b>
               <div class="panel-heading-right is-pulled-right">
-                <SearchBox @submit="search" @cleared="clear_search" />
+                <SearchBox @submit="search" @cleared="clear_search" />&nbsp;
+                <div class="panel-heading-menu">
+                  <a class="button" tabindex="1" title="Filter result">
+                    <i class="fa fa-filter"></i>
+                  </a>
+                  <ul class="dropdown">
+                    <li @mousedown="apply_filter('default', 'id')">
+                      <i v-if="filter_result.name==='default'" class="fa fa-dot-circle-o"></i>
+                      <i v-else class="fa fa-circle-o"></i>
+                      Default order
+                    </li>
+                    <li @mousedown="apply_filter('balance', 'desc')">
+                      <i v-if="filter_result.name==='balance'" class="fa fa-dot-circle-o"></i>
+                      <i v-else class="fa fa-circle-o"></i>
+                      From highest balance
+                    </li>
+                    <li class="divider"></li>
+                    <li @mousedown="apply_filter('status', '1')">
+                      <i v-if="filter_result.name==='status' && filter_result.value==='1'" 
+                         class="fa fa-dot-circle-o"></i>
+                      <i v-else class="fa fa-circle-o"></i>
+                      Active
+                    </li>
+                    <li @mousedown="apply_filter('status', '0')">
+                      <i v-if="filter_result.name==='status' && filter_result.value==='0'" 
+                         class="fa fa-dot-circle-o"></i>
+                      <i v-else class="fa fa-circle-o"></i>
+                      Inactive
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="panel-block" style="background-color:white">
               <table class="table is-hoverable is-narrow is-striped is-bordered-inside is-fullwidth" style="margin-bottom:0">
                 <thead>
                   <tr>
-                    <th>Name</td><th>Email</th><th>Wallet</th>
+                    <th>Name</td><th>Email</th><th>Balance</th><th>Status</th><th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in items">
+                  <tr v-for="(item, index) in items">
                     <td><a :href="'/user/' + item.id" target="_blank">{{item.name}}</a></td>
                     <td>{{item.email}}</td>
-                    <td>
-                      <span class="eth-address monospace">{{item.address}}</span>
-                      <span class="qr-button" title="Click for QR code" @click="show_qr(item.address)">
+                    <td>{{truncate_decimal(item.balance)}} KTA</td>
+                    <td :class="status_text(item.active)">{{status_text(item.active)}}</td>
+                    <td  class="actions">
+                      <a class="button is-gradient is-small has-text-info" 
+                        @click="show_qr(item.address)"
+                        title="Show QR Address">
                         <i class="fa fa-qrcode"></i>
-                      </span>
+                      </a>
+                      <template v-if="item.role_id===2">
+                        <a v-if="item.active>0"
+                          class="button is-gradient is-small has-text-primary" 
+                          title="Deactivate account"
+                          @click="confirm_status(0,index)"
+                        >
+                          <i class="fa fa-lock"></i>
+                        </a>
+                        <a v-else
+                          class="button is-gradient is-small has-text-danger" 
+                          title="Reactivate account"
+                          @click="confirm_status(1,index)"
+                        >
+                          <i class="fa fa-unlock-alt"></i>
+                        </a>
+                      </template>
                     </td>
                   </tr>
                 </tbody>
@@ -61,6 +110,35 @@
         </footer>
       </div>
     </div>
+    <div class="modal" :class="{'is-active':modals.confirm_status.show}">
+      <div class="modal-background"></div>
+      <div class="modal-card animated" style="max-width:430px">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Confirm Status</p>
+          <button class="delete is-danger" :disabled="modals.confirm_status.loading"
+            @click="modals.confirm_status.show=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="columns">
+            <div class="column">
+              Do you want to <b>{{modals.confirm_status.status_text}}</b> 
+              <code>{{modals.confirm_status.user.email}}</code>?
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot" style="justify-content:flex-end">
+          <button class="button is-gradient"
+            :class="{'is-loading':modals.confirm_status.loading}"
+            :disabled="modals.confirm_status.loading"
+            @click="submit_confirm_status()"
+          >Yes</button>
+          <button class="button is-gradient" 
+            @click="modals.confirm_status.show=false" 
+            :disabled="modals.confirm_status.loading"
+          >Cancel</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -88,8 +166,22 @@
         loading: false,
         auth: null,
         filter_result: {
-          type: 'search',
-          keyword: ''
+          name: 'balance',
+          value: 'desc',
+          search_keyword: ''
+        },
+        modals: {
+          confirm_status: {
+            user: {
+              email: '',
+              id: '',
+              index: 0
+            },
+            status: '',
+            status_text: '',
+            show: false,
+            loading: false
+          }
         }
       }
     },
@@ -108,17 +200,26 @@
       }
     },
     methods: {
+      apply_filter (name, value) {
+        this.filter_result.name = name
+        this.filter_result.value = value
+        this.fetch()
+      },
       fetch () {
         this.loading = true
-        let options = {
-          params: {
-            per_page: this.page_limit,
-            page: this.page_number
-          }
-        }
+        let options = { params: { per_page: this.page_limit, page: this.page_number } }
         let filter = this.filter_result
-        if (filter.type === 'search' && filter.keyword.trim().length > 0) {
-          options.params.search = filter.keyword
+        if (filter.search_keyword.trim().length > 0) {
+          options.params.search = filter.search_keyword
+        }
+        if (filter.name !== 'default') {
+          if (filter.name === 'balance') {
+            options.params.order_by = 'balance'
+            options.params.sort_as = filter.value
+          } else if (filter.name === 'status') {
+            options.params.filter_field = 'active'
+            options.params.filter_value = filter.value
+          }
         }
         this.$http.get('users', options).then((response) => {
           this.auth = true
@@ -143,14 +244,52 @@
       },
       search (value) {
         let filter = this.filter_result
-        filter.type = 'search'
-        filter.keyword = value
+        filter.search_keyword = value
         this.fetch()
+      },
+      confirm_status (status, userIndex) {
+        let user = this.items[userIndex]
+        this.modals.confirm_status.user.id = user.id
+        this.modals.confirm_status.user.email = user.email
+        this.modals.confirm_status.user.index = userIndex
+        this.modals.confirm_status.status = status
+        this.modals.confirm_status.status_text = (status === 0) ? 'deactivate' : 'reactivate'
+        this.modals.confirm_status.show = true
+      },
+      submit_confirm_status () {
+        this.modals.confirm_status.loading = true
+        let status = this.modals.confirm_status.status
+        let userId = this.modals.confirm_status.user.id
+        let userIndex = this.modals.confirm_status.user.index
+        this.$http.put(`users/${userId}`, { active: status }).then((response) => {
+          try {
+            let newUserData = response.body.data
+            let newItems = JSON.parse(JSON.stringify(this.items))
+            newItems[userIndex] = newUserData
+            this.$store.commit('setPageData', newItems)
+            this.$noty.success('Status updated')
+          } catch (e) {
+            this.modals.confirm_status.loading = false
+            this.modals.confirm_status.show = false
+            this.$noty.error('An error has occured')
+          }
+        }).catch((response) => {
+          this.$noty.error('An error has occured')
+        }).finally(() => {
+          this.modals.confirm_status.loading = false
+          this.modals.confirm_status.show = false
+        })
       },
       clear_search () {
         let filter = this.filter_result
-        filter.keyword = ''
+        filter.search_keyword = ''
         this.fetch()
+      },
+      truncate_decimal (amount) {
+        return Number(amount).toFixed(4)
+      },
+      status_text (code) {
+        return code === 0 ? 'inactive' : 'active'
       }
     },
     components: { PageLoader, PanelPaginator, BusyPanel, SearchBox }
@@ -158,9 +297,13 @@
 </script>
 
 <style scoped>
-  @media (max-width:768px) {
-    .eth-address {
-      display: none;
-    }
+  .actions .button {
+    width: 32px;
+  }
+  .active {
+    color: #00d1b2;
+  }
+  .inactive {
+    color: #ff3860;
   }
 </style>
