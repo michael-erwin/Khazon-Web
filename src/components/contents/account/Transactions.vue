@@ -27,7 +27,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <td>Receiver</td>
+                    <td>Recipient</td>
                     <td>
                       <span class="eth-address monospace overflow-ellipsis">
                         <a :href="'/user/' + item.receiver" target="_blank">{{item.receiver}}</a>
