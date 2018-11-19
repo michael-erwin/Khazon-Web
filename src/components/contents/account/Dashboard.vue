@@ -438,7 +438,7 @@
         filter_result: {
           code: ''
         },
-        kta_precision: 2,
+        kta_precision: 4,
         qr_scanner: {
           active: null,
           field: null
